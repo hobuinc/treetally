@@ -97,7 +97,7 @@ def extent_handle(extent: Extents, data: Data, res_threshold:int=100,
     miny = bmaxy - (extent.y2 * extent.resolution)
     maxy = bmaxy - (extent.y1 * extent.resolution)
 
-    chunk = Extents(Bounds(minx, miny, maxx, maxy), extent.resolution, r)
+    chunk = Extents(Bounds(minx, miny, maxx, maxy), extent.resolution, extent.alignment, r)
 
     if extent.bounds == extent.root:
         extent.root = chunk.bounds

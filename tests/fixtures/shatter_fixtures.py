@@ -16,8 +16,8 @@ def s3_uri(s3_bucket) -> Generator[str, None, None]:
     yield f"s3://{s3_bucket}/test_silvimetric/{uuid}"
 
 @pytest.fixture(scope="function")
-def s3_storage_config(s3_uri, bounds, resolution, crs, attrs, metrics) -> Generator[StorageConfig, None, None]:
-    yield StorageConfig(bounds, crs, resolution, attrs, metrics,
+def s3_storage_config(s3_uri, bounds, resolution, alignment, crs, attrs, metrics) -> Generator[StorageConfig, None, None]:
+    yield StorageConfig(bounds, crs, resolution, alignment, attrs, metrics,
                         svversion, tdb_dir=s3_uri)
 
 @pytest.fixture(scope='function')

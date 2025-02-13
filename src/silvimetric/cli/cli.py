@@ -135,9 +135,11 @@ def scan_cmd(app, resolution, point_count, pointcloud, bounds, depth, filter):
         help="List of metrics to include in output, eg. '-m stats,percentiles'")
 @click.option("--resolution", type=float, default=30.0,
         help="Summary pixel resolution")
+@click.option("--alignment", type=str, default='PixelIsArea',
+        help="Pixel alignment: 'PixelIsPoint' or 'PixelIsArea'")
 @click.pass_obj
 def initialize_cmd(app: ApplicationConfig, bounds: Bounds, crs: pyproj.CRS,
-        attributes: list[Attribute], resolution: float, metrics: list[Metric]):
+        attributes: list[Attribute], resolution: float, alignment: str, metrics: list[Metric]):
     """Initialize silvimetrics DATABASE"""
 
     storageconfig = StorageConfig(tdb_dir = app.tdb_dir,
@@ -146,7 +148,8 @@ def initialize_cmd(app: ApplicationConfig, bounds: Bounds, crs: pyproj.CRS,
             crs = crs,
             attrs = attributes,
             metrics = metrics,
-            resolution = resolution)
+            resolution = resolution,
+            alignment = alignment)
     return initialize.initialize(storageconfig)
 
 

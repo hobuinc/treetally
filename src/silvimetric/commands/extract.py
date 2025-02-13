@@ -152,7 +152,7 @@ def extract(config: ExtractConfig) -> None:
     config.log.debug(f'Extracting metrics {[m for m in ma_list]}')
     root_bounds=storage.config.root
 
-    e = Extents(config.bounds, config.resolution, root=root_bounds)
+    e = Extents(config.bounds, config.resolution, storage.config.alignment, root=root_bounds)
     i = e.get_indices()
     xsize = e.x2
     ysize = e.y2

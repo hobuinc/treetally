@@ -40,11 +40,12 @@ class Test_Storage(object):
         storage.saveConfig()
         config = storage.getConfig()
         assert config.resolution == storage.config.resolution
+        assert config.alignment == storage.config.alignment
         assert config.root == storage.config.root
         assert config.crs == storage.config.crs
         assert storage.config.version == svversion
 
-    def test_metric_dependencies(self, tmp_path_factory, metrics, crs, resolution, attrs, bounds):
+    def test_metric_dependencies(self, tmp_path_factory, metrics, crs, resolution, alignment, attrs, bounds):
         ms = copy.deepcopy(metrics)
 
         path = tmp_path_factory.mktemp("test_tdb")
@@ -53,7 +54,7 @@ class Test_Storage(object):
 
         ms[0].dependencies = [Attributes['HeightAboveGround']]
         sc = StorageConfig(tdb_dir=p, crs=crs, resolution=resolution,
-                attrs=attrs, metrics=ms, root=bounds)
+                alignment = alignment, attrs=attrs, metrics=ms, root=bounds)
 
         with pytest.raises(ValueError) as e:
             Storage.create(sc)

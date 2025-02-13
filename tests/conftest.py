@@ -91,8 +91,8 @@ def bounds(minx, maxx, miny, maxy) -> Generator[Bounds, None, None]:
     yield b
 
 @pytest.fixture(scope='function')
-def extents(resolution, bounds) -> Generator[Extents, None, None]:
-    yield Extents(bounds,resolution,bounds)
+def extents(resolution, alignment, bounds) -> Generator[Extents, None, None]:
+    yield Extents(bounds,resolution,alignment,bounds)
 
 @pytest.fixture(scope="function")
 def attrs(dims) -> Generator[list[Attribute], None, None]:
@@ -106,6 +106,10 @@ def dims() -> Generator[dict, None, None]:
 @pytest.fixture(scope='session')
 def resolution() -> Generator[int, None, None]:
     yield 30
+
+@pytest.fixture(scope='session')
+def alignment() -> Generator[int, None, None]:
+    yield 'pixelisarea'
 
 @pytest.fixture(scope='session')
 def test_point_count() -> Generator[int, None, None]:

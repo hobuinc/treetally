@@ -66,8 +66,8 @@ class Storage:
         xi = floor((config.root.maxx - config.root.minx) / float(config.resolution))
         yi = floor((config.root.maxy - config.root.miny) / float(config.resolution))
 
-        dim_row = tiledb.Dim(name="X", domain=(0,xi), dtype=np.int32)
-        dim_col = tiledb.Dim(name="Y", domain=(0,yi), dtype=np.int32)
+        dim_row = tiledb.Dim(name="X", domain=(0,xi-1), tile=1, dtype=np.int32)
+        dim_col = tiledb.Dim(name="Y", domain=(0,yi-1), tile=1, dtype=np.int32)
         domain = tiledb.Domain(dim_row, dim_col)
 
         count_att = tiledb.Attr(name="count", dtype=np.int32)
@@ -86,13 +86,12 @@ class Storage:
         # allows_duplicates lets us insert multiple values into each cell,
         # with each value representing a set of values from a shatter process
         # https://docs.tiledb.com/main/how-to/performance/performance-tips/summary-of-factors#allows-duplicates
-        schema = tiledb.ArraySchema(domain=domain, sparse=True,
-            attrs=[count_att, *dim_atts, *metric_atts], allows_duplicates=True,
-            capacity=1000)
+        schema = tiledb.ArraySchema(domain=domain, sparse=False,
+            attrs=[count_att, *dim_atts, *metric_atts], capacity=1000)
         schema.check()
 
-        tiledb.SparseArray.create(config.tdb_dir, schema)
-        with tiledb.SparseArray(config.tdb_dir, "w") as a:
+        tiledb.DenseArray.create(config.tdb_dir, schema)
+        with tiledb.DenseArray(config.tdb_dir, "w") as a:
             meta = str(config)
             a.meta['config'] = meta
 
@@ -183,7 +182,7 @@ class Storage:
                 or a.name in [ma.name for ma in m.attributes]]
 
     @contextlib.contextmanager
-    def open(self, mode:str='r', timestamp=None) -> Generator[tiledb.SparseArray, None, None]:
+    def open(self, mode:str='r', timestamp=None) -> Generator[tiledb.DenseArray, None, None]:
         """
         Open stream for TileDB database in given mode and at given timestamp.
 

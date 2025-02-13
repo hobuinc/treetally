@@ -6,10 +6,13 @@ import re
 
 import numpy as np
 import pandas as pd
+from pandas._libs import lib
+from pandas._typing import npt
 
 @pd.api.extensions.register_extension_dtype
 class AttributeDtype(pd.api.extensions.ExtensionDtype):
     type = np.generic
+    na_value = None
 
     def __init__(self, subtype=np.float32):
         self._subtype = np.dtype(subtype)
@@ -52,7 +55,7 @@ class AttributeArray(pd.api.extensions.ExtensionArray):
         assert isinstance(dtype, AttributeDtype)
         self._dtype = dtype
         # self._data = np.array([np.array(array, dtype=dtype.subtype) for array in arrays], dtype=dtype.subtype)
-        self._data = [np.asarray(array, dtype=dtype.subtype) for array in arrays]
+        self._data = [ np.asarray(array, dtype=dtype.subtype) for array in arrays ]
 
     @classmethod
     def _from_sequence(cls, scalars, dtype=None, copy=False):

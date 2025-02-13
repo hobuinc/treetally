@@ -22,38 +22,43 @@ def write(x, y, val, s:Storage, attrs, dims, metrics):
     with s.open('w') as w:
         w[x,y] = data
 
+def confirm_storage(storage, timestamp, maxy):
+    with storage.open('r', timestamp=timestamp) as a:
+        assert a[:,:]['Z'].size == 100
+        xdom = a.schema.domain.dim('X').domain[1]
+        ydom = a.schema.domain.dim('Y').domain[1]
+        assert xdom == 9
+        assert ydom == 9
+
+        for xi in range(xdom):
+            for yi in range(ydom):
+                a[xi, yi]['Z'].size == 1
+                a[xi, yi]['Z'].item().size == 900
+                # this should have all indices from 0 to 9 filled.
+                # if oob error, it's not this test's fault
+                assert bool(np.all( a[xi, yi]['Z'].item() == ((maxy/storage.config.resolution) - (yi + 1)) ))
+
 class Test_Shatter(object):
 
     def test_command(self, shatter_config, storage: Storage, maxy):
         shatter(shatter_config)
-        with storage.open('r') as a:
-            assert a[:,:]['Z'].shape[0] == 100
-            xdom = a.schema.domain.dim('X').domain[1]
-            ydom = a.schema.domain.dim('Y').domain[1]
-            assert xdom == 10
-            assert ydom == 10
-
-            for xi in range(xdom):
-                for yi in range(ydom):
-                    a[xi, yi]['Z'].size == 1
-                    a[xi, yi]['Z'][0].size == 900
-                    # this should have all indices from 0 to 9 filled.
-                    # if oob error, it's not this test's fault
-                    assert bool(np.all( a[xi, yi]['Z'][0] == ((maxy/storage.config.resolution) - (yi + 1)) ))
+        assert storage.config.next_time_slot == 1
+        timestamp = (0,0)
+        confirm_storage(storage, timestamp, maxy)
 
     def test_multiple(self, shatter_config, storage: Storage, maxy):
         shatter(shatter_config)
         with storage.open('r') as a:
-            assert a[:,:]['Z'].shape[0] == 100
+            assert a[:,:]['Z'].size == 100
             xdom = a.schema.domain.dim('X').domain[1]
             ydom = a.schema.domain.dim('Y').domain[1]
-            assert xdom == 10
-            assert ydom == 10
+            assert xdom == 9
+            assert ydom == 9
 
             for xi in range(xdom):
                 for yi in range(ydom):
                     a[xi, yi]['Z'].size == 1
-                    a[xi, yi]['Z'][0].size == 900
+                    a[xi, yi]['Z'].item().size == 900
                     # this should have all indices from 0 to 9 filled.
                     # if oob error, it's not this test's fault
                     assert bool(np.all( a[xi, yi]['Z'][0] == ((maxy/storage.config.resolution) - (yi + 1)) ))

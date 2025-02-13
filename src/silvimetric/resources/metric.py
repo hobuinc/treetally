@@ -78,7 +78,7 @@ class Metric():
         :return: TileDB Attribute
         """
         entry_name = self.entry_name(attr.name)
-        return Attr(name=entry_name, dtype=self.dtype)
+        return Attr(name=entry_name, dtype=self.dtype, nullable=True)
 
     def entry_name(self, attr: str) -> str:
         """Name for use in TileDB and extract file generation."""
@@ -102,7 +102,7 @@ class Metric():
         else:
             pass_args = args
 
-        return self._method(d, *pass_args)
+        return self._method(d.astype(self.dtype), *pass_args)
 
     def do(self, data: pd.DataFrame, *args) -> pd.DataFrame:
         """Run metric and filters. Use previously run metrics to avoid running

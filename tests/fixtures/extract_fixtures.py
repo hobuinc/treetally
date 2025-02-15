@@ -18,16 +18,19 @@ def extract_attrs(dims)->Generator[list[str], None, None]:
 
 
 @pytest.fixture(scope='function')
-def multivalue_config(tif_filepath, metric_shatter_config):
+def multivalue_config(tif_filepath, metric_shatter_config, alignment, resolution):
 
     shatter(metric_shatter_config)
+
+    ll = list(metric_shatter_config.bounds.bisect())[0]
+    ll.adjust_alignment(resolution, alignment)
 
     # reset config
     second_config = copy.deepcopy(metric_shatter_config)
     second_config.name = uuid.uuid4()
-    second_config.bounds = Bounds(300,300,450,450)
+    second_config.bounds = ll
     second_config.point_count = 0
-    second_config.time_slot = 0
+    second_config.time_slot += 1
     second_config.mbr = ()
 
     shatter(second_config)

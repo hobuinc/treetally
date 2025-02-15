@@ -29,14 +29,14 @@ class TestCli(object):
                 "--bounds", str(bounds), "-m", "stats,p_moments"], catch_exceptions=False)
         assert res.exit_code == 0
 
-    def test_cli_metric_file(self, tmp_path_factory: TempPathFactory,
+    def test_cli_metric_file(self, tmp_path_factory: TempPathFactory, alignment: str,
             runner: CliRunner, bounds: Bounds, date: datetime, copc_filepath: str) -> None:
         # test that we can pass in a file containing metrics and then run shatter over it
         path = tmp_path_factory.mktemp("test_tdb")
         p = os.path.abspath(path)
         fakes = os.path.abspath('tests/fixtures/fake_metrics.py')
         res = runner.invoke(cli.cli, args=["-d", p, "--debug",
-                "--scheduler", "single-threaded", "initialize",
+                "--scheduler", "single-threaded", "initialize", "--alignment", alignment,
                 "--resolution", "10", "--crs", "EPSG:3857", "--bounds",
                 str(bounds), "-m", f"{fakes}"],
                 catch_exceptions=False)
@@ -56,8 +56,13 @@ class TestCli(object):
 
 
 
-    def test_cli_shatter(self, runner: CliRunner, maxy: float, date: datetime,
-            tdb_filepath: str, copc_filepath: str, storage: shatter.Storage) -> None:
+    def test_cli_shatter(self, runner: CliRunner, date: datetime,
+            tdb_filepath: str, copc_filepath: str, storage: shatter.Storage,
+            test_point_count) -> None:
+
+        from test_shatter import confirm_one_entry
+        base = 11 if storage.config.alignment == 'pixelispoint' else 10
+        maxy = storage.config.root.maxy
 
         res = runner.invoke(cli.cli, args=["-d", tdb_filepath,
                 "--scheduler", "single-threaded",
@@ -65,22 +70,7 @@ class TestCli(object):
                 "--date", date.isoformat()+'Z',
                 "--tilesize", '10'], catch_exceptions=False)
         assert res.exit_code == 0
-
-        with storage.open('r') as a:
-            assert a[:,:]['Z'].shape[0] == 100
-            xdom = a.schema.domain.dim('X').domain[1]
-            ydom = a.schema.domain.dim('Y').domain[1]
-            assert xdom == 10
-            assert ydom == 10
-
-            for xi in range(xdom):
-                for yi in range(ydom):
-                    a[xi, yi]['Z'].size == 1
-                    a[xi, yi]['Z'][0].size == 900
-                    # this should have all indices from 0 to 9 filled.
-                    # if oob error, it's not this test's fault
-                    assert bool(np.all( a[xi, yi]['Z'][0] == (
-                        (maxy/storage.config.resolution) - (yi + 1)) ))
+        confirm_one_entry(storage, maxy, base, test_point_count, 1)
 
     def test_cli_scan(self, runner: CliRunner, copc_filepath: str,
             storage_config: StorageConfig) -> None:

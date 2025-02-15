@@ -26,17 +26,17 @@ def tdb_filepath(storage_config) -> Generator[str, None, None]:
     yield storage_config.tdb_dir
 
 @pytest.fixture(scope='function')
-def app_config(tdb_filepath, debug=True) -> Generator[ApplicationConfig, None, None]:
+def app_config(tdb_filepath) -> Generator[ApplicationConfig, None, None]:
     log = Log(20) # INFO
     app = ApplicationConfig(tdb_dir = tdb_filepath,
                             log = log)
     yield app
 
 @pytest.fixture(scope='function')
-def storage_config(tmp_path_factory, bounds, resolution, crs, attrs, metrics) -> Generator[StorageConfig, None, None]:
+def storage_config(tmp_path_factory, bounds, resolution, crs, attrs, metrics, alignment) -> Generator[StorageConfig, None, None]:
     path = tmp_path_factory.mktemp("test_tdb")
     p = os.path.abspath(path)
-    log = Log('DEBUG')
+    log = Log('INFO')
 
     sc =  StorageConfig(tdb_dir = p,
                         log = log,
@@ -45,6 +45,7 @@ def storage_config(tmp_path_factory, bounds, resolution, crs, attrs, metrics) ->
                         resolution = resolution,
                         attrs = attrs,
                         metrics = metrics,
+                        alignment = alignment,
                         version = svversion)
     Storage.create(sc)
     yield sc
@@ -62,7 +63,6 @@ def shatter_config(copc_filepath, storage_config, bounds, date) -> Generator[Sha
                       attrs = storage_config.attrs,
                       metrics = storage_config.metrics,
                       bounds = bounds,
-                      debug = True,
                       date = date, tile_size=10)
 
     yield s
@@ -107,13 +107,16 @@ def dims() -> Generator[dict, None, None]:
 def resolution() -> Generator[int, None, None]:
     yield 30
 
-@pytest.fixture(scope='session')
-def alignment() -> Generator[int, None, None]:
-    yield 'pixelisarea'
+@pytest.fixture(scope='session', params=['pixelisarea','pixelispoint'])
+def alignment(request) -> Generator[int, None, None]:
+    yield request.param
 
 @pytest.fixture(scope='session')
-def test_point_count() -> Generator[int, None, None]:
-    yield 90000
+def test_point_count(alignment) -> Generator[int, None, None]:
+    if alignment == 'pixelisarea':
+        yield 90000
+    else: #pixelispoint
+        yield 108900
 
 @pytest.fixture(scope='session')
 def minx() -> Generator[float, None, None]:

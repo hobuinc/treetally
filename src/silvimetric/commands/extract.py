@@ -47,7 +47,7 @@ def write_tif(xsize: int, ysize: int, data:np.ndarray, name: str,
 
     driver = gdal.GetDriverByName("GTiff")
     gdal_type = np_to_gdal_types[np.dtype(data.dtype).str]
-    tif = driver.Create(str(path), int(xsize), int(ysize), 1, gdal_type)
+    tif = driver.Create(str(path), int(xsize), int(ysize), 1, gdal_type, )
     tif.SetGeoTransform(transform)
     tif.SetProjection(srs.ExportToWkt())
     tif.GetRasterBand(1).WriteArray(data)

@@ -22,11 +22,12 @@ class Test_Data(object):
         """Check open a pipeline with our own bounds"""
         ll = list(bounds.bisect())[0]
 
+        data = Data(no_cell_line_pipeline, storage_config, bounds = ll)
+
         #data will be collared upon execution, extra data will be grabbed
-        minx, miny, maxx, maxy = ll.get()
+        minx, miny, maxx, maxy = data.bounds.get()
         collared = Bounds(minx - 30, miny - 30, maxx + 30, maxy + 30)
 
-        data = Data(no_cell_line_pipeline, storage_config, bounds = ll)
         assert data.is_pipeline() == True
         data.execute()
 
@@ -34,7 +35,9 @@ class Test_Data(object):
         assert len(data.array) == collared_count
 
         assert data.estimate_count(ll) == no_cell_line_pc
-        assert data.count(ll) == no_cell_line_pc / 4
+        correct_count = (21025 if storage_config.alignment.lower() == 'pixelisarea'
+                else 25600)
+        assert data.count(ll) == correct_count
 
 class Test_Autzen(object):
 

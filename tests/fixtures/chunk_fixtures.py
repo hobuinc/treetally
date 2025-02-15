@@ -14,11 +14,17 @@ def unfiltered(extents: Extents) -> Generator[List[Extents], None, None]:
     yield list(extents.get_leaf_children(30))
 
 @pytest.fixture(scope='session')
-def copc_filepath() -> Generator[str, None, None]:
-    path = os.path.join(os.path.dirname(__file__), "..", "data",
-            "test_data.copc.laz")
-    assert os.path.exists(path)
-    yield os.path.abspath(path)
+def copc_filepath(alignment) -> Generator[str, None, None]:
+    if alignment == 'pixelispoint':
+        path = os.path.join(os.path.dirname(__file__), "..", "data",
+                "test_data_pixel_point.copc.laz")
+        assert os.path.exists(path)
+        yield os.path.abspath(path)
+    elif alignment == 'pixelisarea':
+        path = os.path.join(os.path.dirname(__file__), "..", "data",
+                "test_data_pixel_area.copc.laz")
+        assert os.path.exists(path)
+        yield os.path.abspath(path)
 
 @pytest.fixture(scope='function')
 def copc_data(copc_filepath, storage_config) -> Generator[Data, None, None]:

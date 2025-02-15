@@ -2,6 +2,7 @@ import os
 import io
 from typing_extensions import Generator
 import pickle
+import copy
 
 import pytest
 import pandas as pd
@@ -66,12 +67,13 @@ def metric_dag_results() -> Generator[pd.DataFrame, None, None]:
     yield df
 
 @pytest.fixture(scope='function')
-def metric_shatter_config(tmp_path_factory, copc_filepath, attrs, metrics, bounds,
-        date, crs, resolution) -> Generator[pd.Series, None, None]:
+def metric_shatter_config(tmp_path_factory, copc_filepath, attrs, bounds,
+        date, crs, resolution, alignment) -> Generator[pd.Series, None, None]:
 
+    metrics = [copy.deepcopy(mean)]
     path = tmp_path_factory.mktemp("test_tdb")
     p = os.path.abspath(path)
-    log = Log('DEBUG')
+    log = Log('INFO')
 
     def dummy_fn(df: pd.DataFrame) -> pd.DataFrame:
         assert isinstance(df, pd.DataFrame)
@@ -90,6 +92,7 @@ def metric_shatter_config(tmp_path_factory, copc_filepath, attrs, metrics, bound
                         resolution=resolution,
                         attrs=attrs,
                         metrics=metrics,
+                        alignment=alignment,
                         version=svversion)
 
     s = Storage.create(st_config)
@@ -97,7 +100,6 @@ def metric_shatter_config(tmp_path_factory, copc_filepath, attrs, metrics, bound
             log=log,
             filename=copc_filepath,
             bounds=bounds,
-            debug=True,
             date=date)
     yield sh_config
 

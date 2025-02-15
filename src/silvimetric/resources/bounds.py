@@ -174,7 +174,7 @@ class Bounds(dict): #for JSON serializing
             else:
                 pass
         else:
-            raise Exception(f"Invalid pixel alignment: {alignment}")
+            raise ValueError(f"Invalid pixel alignment: {alignment}")
 
     @staticmethod
     def shared_bounds(first, second):

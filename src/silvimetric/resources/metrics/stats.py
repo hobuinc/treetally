@@ -19,7 +19,8 @@ def m_mode(data):
     return v
 
 def m_median(data, *args):
-    return np.median(data)
+    a = np.median(data)
+    return a
 
 def m_min(data, *args):
     return np.min(data)

@@ -30,7 +30,7 @@ def s3_storage(s3_storage_config) -> Generator[Storage, None, None]:
 def s3_shatter_config(s3_storage, copc_filepath, attrs, metrics, date) -> Generator[ShatterConfig, None, None]:
     config = s3_storage.config
     yield ShatterConfig(filename=copc_filepath, attrs=attrs, metrics=metrics,
-                        debug=True, tdb_dir=config.tdb_dir, date=date)
+                        tdb_dir=config.tdb_dir, date=date)
 
 @pytest.fixture(scope='function')
 def uneven_storage_config(tmp_path_factory, bounds, crs, attrs, metrics) -> Generator[StorageConfig, None, None]:
@@ -38,7 +38,6 @@ def uneven_storage_config(tmp_path_factory, bounds, crs, attrs, metrics) -> Gene
     path = tmp_path_factory.mktemp("test_tdb")
     p = os.path.abspath(path)
 
-    log = Log('DEBUG')
     sc = StorageConfig(tdb_dir = p,
                         log = log,
                         crs = crs,
@@ -65,19 +64,20 @@ def uneven_shatter_config(copc_filepath, uneven_storage_config, date) -> Generat
     yield s
 
 @pytest.fixture(scope='function')
-def partial_storage_config(tmp_path_factory, crs, attrs, metrics) -> Generator[StorageConfig, None, None]:
+def partial_storage_config(tmp_path_factory, crs, attrs, metrics, bounds, alignment) -> Generator[StorageConfig, None, None]:
     path = tmp_path_factory.mktemp("test_tdb")
     p = os.path.abspath(path)
-    log = Log('DEBUG')
+    log = Log('INFO')
 
-    bounds = Bounds(300,300,450,450)
+    b = list(bounds.bisect())[0]
     sc = StorageConfig(tdb_dir = p,
                         log = log,
                         crs = crs,
-                        root = bounds,
+                        root = b,
                         resolution = 30,
                         attrs = attrs,
                         metrics = metrics,
+                        alignment=alignment,
                         version = svversion)
     Storage.create(sc)
     yield sc
@@ -92,5 +92,4 @@ def partial_shatter_config(copc_filepath, date, partial_storage_config) -> Gener
                       attrs=psc.attrs,
                       metrics=psc.metrics,
                       filename=copc_filepath,
-                      debug=True,
                       date=date)
